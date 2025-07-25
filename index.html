@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Robot Arm Control Panel</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <h2>🦾 Robot Arm Control Panel</h2>
+
+    <!-- نموذج لإدخال قيم المحركات -->
+    <form id="poseForm">
+        <label for="motor1">Motor 1:</label>
+        <input type="range" id="motor1" name="motor1" min="0" max="180"><br>
+
+        <label for="motor2">Motor 2:</label>
+        <input type="range" id="motor2" name="motor2" min="0" max="180"><br>
+
+        <label for="motor3">Motor 3:</label>
+        <input type="range" id="motor3" name="motor3" min="0" max="180"><br>
+
+        <label for="motor4">Motor 4:</label>
+        <input type="range" id="motor4" name="motor4" min="0" max="180"><br>
+
+        <label for="motor5">Motor 5:</label>
+        <input type="range" id="motor5" name="motor5" min="0" max="180"><br>
+
+        <label for="motor6">Motor 6:</label>
+        <input type="range" id="motor6" name="motor6" min="0" max="180"><br><br>
+
+        <button type="submit">💾 Save Pose</button>
+    </form>
+
+    <!-- هنا بنعرض الحركات لاحقًا -->
+    <div id="posesTable"></div>
+
+    <!-- ربط سكربت الجافاسكربت -->
+    <script>
+        // إرسال النموذج بدون إعادة تحميل الصفحة
+        document.getElementById('poseForm').addEventListener('submit', function(e) {
+            e.preventDefault(); // نمنع إعادة تحميل الصفحة
+
+            // قراءة القيم من sliders
+            const data = new FormData(this);
+
+            // إرسالها إلى submit.php
+            fetch('submit.php', {
+                method: 'POST',
+                body: data
+            })
+            .then(response => response.text())
+            .then(result => {
+                alert(result);  // تظهر نتيجة الحفظ
+                loadPoses();    // إعادة تحميل جدول الحركات
+            });
+        });
+
+        // دالة لتحميل جدول الحركات من السيرفر
+        function loadPoses() {
+            fetch('fetch.php')
+            .then(response => response.text())
+            .then(data => {
+                document.getElementById('posesTable').innerHTML = data;
+            });
+        }
+
+        // تحميل الحركات عند فتح الصفحة
+        window.onload = loadPoses;
+
+        function loadPose(id) {
+    fetch('get_run_pose.php')
+    .then(response => response.json())
+    .then(data => {
+        if (data.motor1) {
+            document.getElementById('motor1').value = data.motor1;
+            document.getElementById('motor2').value = data.motor2;
+            document.getElementById('motor3').value = data.motor3;
+            document.getElementById('motor4').value = data.motor4;
+            document.getElementById('motor5').value = data.motor5;
+            document.getElementById('motor6').value = data.motor6;
+            alert("تم تحميل الحركة بنجاح ✅");
+        } else {
+            alert("لا توجد حركة نشطة.");
+        }
+    });
+}
+
+function removePose(id) {
+    const formData = new FormData();
+    formData.append('id', id);
+
+    fetch('update_status.php', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.text())
+    .then(result => {
+        alert(result);  // رسالة النجاح
+        loadPoses();    // تحديث الجدول بعد الحذف
+    });
+}
+    </script>
+
+</body>
+</html>
